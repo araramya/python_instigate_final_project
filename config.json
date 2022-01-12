@@ -1,0 +1,7 @@
+
+{
+    "regexp" : ["slack"],
+    "repdir" : "PATH_TO_DIR",
+    "filepat" : "FILE_NAME",
+    "fileext" : "csv"
+}
