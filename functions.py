@@ -1,4 +1,5 @@
 import argparse
+from curses.ascii import isdigit
 from main import ArgsInfo
 import json
 import os
@@ -81,18 +82,47 @@ def get_files_path(arg_obj, path, result_list):
     # print("Can't find file, make sure file name and extention is valid")
     # exit()
 def get_avreage_list(num_list):
-    return sum(num_list) / len(num_list)
+    return round(sum(num_list) / len(num_list), 1)
 
 def create_json_report(dict_for_json, arg_obj, i):
         print(dict_for_json)
         file_name = arg_obj.file_pat + str(i) + "_report" + ".json"
         full_file_name = os.path.join(arg_obj.rep_dir, file_name)
+
+        #full_file_name = arg_obj.rep_dir + file_name
+        print(full_file_name)
         try:
             with open(full_file_name, "w") as outfile:
                 json.dump(dict_for_json, outfile)
         except:
             print("Error with creating json report file or dumping dictionary")
         
+def create_anomaly_report(anomal_values, arg_obj, j):
+    dict_for_json = {}
+    for i, elem in enumerate(anomal_values):
+        dict_for_json[i] = elem
+    file_name = arg_obj.file_pat + str(j) + "_anomaly.json"
+    full_file_name = os.path.join(arg_obj.rep_dir, file_name)
+    try:
+        with open(full_file_name, "w") as outfile:
+            json.dump(dict_for_json, outfile)
+    except:
+        print("Error with creaeting json anomal report file or dumping dictionary")
+
+
+
+def check_anomaly(num_str_list, arg_obj, j):
+    anomal_values = []
+    for num in num_str_list:
+        for char in num:
+            if  not char.isdigit() and  char != '.':
+                anomal_values.append(num)
+                num_str_list.remove(num)
+                break
+        if(len(anomal_values) > 0):
+            create_anomaly_report(anomal_values, arg_obj, j)
+    print([float(x) for x in num_str_list])
+    return ([float(x) for x in num_str_list])
 
 
 def find_str_get_nums(str_list, files_list, arg_obj):
@@ -110,9 +140,10 @@ def find_str_get_nums(str_list, files_list, arg_obj):
             for i, word in enumerate(text):
                 if word == mystr:
                     print(text[i], text[i + 1])
-                    number_list.append(int(text[i+1]))
+                    number_list.append(text[i+1])
+            
             print(number_list)
-            value = get_avreage_list(number_list)
+            value = get_avreage_list(check_anomaly(number_list, arg_obj, j))
             dict_for_json[mystr] = value 
         create_json_report(dict_for_json, arg_obj, j)
         #print (dict_for_json)
