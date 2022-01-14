@@ -66,38 +66,33 @@ def get_files_path(arg_obj, path, result_list):
         else:
             if file_name == arg_obj.file_pat + arg_obj.file_ext:
                 result_list.append(file_ab_path)
-    # if len(result_list) == 0:
-    #     print("Can't find file, make sure file name and extention is valid")
-    #     exit()
     return result_list
     
-
-    # path = os.getcwd()
-    # file_name = arg_obj.file_pat + arg_obj.file_ext
-
-    # for root, dirs, files in os.walk(path):
-    #     if file_name in files:
-    #         file_path = os.path.join(root, file_name)
-    #         return file_path
-    # print("Can't find file, make sure file name and extention is valid")
-    # exit()
 def get_avreage_list(num_list):
+    '''
+    this function return avreage value of list 
+    '''
     return round(sum(num_list) / len(num_list), 1)
 
 def create_json_report(dict_for_json, arg_obj, i):
-        print(dict_for_json)
-        file_name = arg_obj.file_pat + str(i) + "_report" + ".json"
-        full_file_name = os.path.join(arg_obj.rep_dir, file_name)
-
-        #full_file_name = arg_obj.rep_dir + file_name
-        print(full_file_name)
-        try:
-            with open(full_file_name, "w") as outfile:
-                json.dump(dict_for_json, outfile)
-        except:
-            print("Error with creating json report file or dumping dictionary")
+    '''
+    This function is for creating json file which will contain avreage values of searched words
+    and save that value in json format in repdir
+    '''
+    file_name = arg_obj.file_pat + str(i) + "_report" + ".json"
+    full_file_name = os.path.join(arg_obj.rep_dir, file_name)
+    try:
+        with open(full_file_name, "w") as outfile:
+            json.dump(dict_for_json, outfile)
+    except:
+        print("Error with creating json report file or dumping dictionary")
         
 def create_anomaly_report(anomal_values, arg_obj, j):
+    '''
+    this function works as create_json_report function
+    it's create report for any anomal data and save it in json format
+    int repdir
+    '''
     dict_for_json = {}
     for i, elem in enumerate(anomal_values):
         dict_for_json[i] = elem
@@ -112,6 +107,10 @@ def create_anomaly_report(anomal_values, arg_obj, j):
 
 
 def check_anomaly(num_str_list, arg_obj, j):
+    '''
+    this function check if numbers after searched words are anomal or not
+    if it's not a number it it's anomal
+    '''
     anomal_values = []
     for num in num_str_list:
         for char in num:
@@ -121,16 +120,17 @@ def check_anomaly(num_str_list, arg_obj, j):
                 break
         if(len(anomal_values) > 0):
             create_anomaly_report(anomal_values, arg_obj, j)
-    print([float(x) for x in num_str_list])
     return ([float(x) for x in num_str_list])
 
 
 def find_str_get_nums(str_list, files_list, arg_obj):
+    '''
+    this function finds our words in file and if it find some get the right value 
+    '''
     for j, myfile in enumerate(files_list):
         dict_for_json = {}
         for mystr in str_list:
             number_list = []
-            print(mystr)
             try:
                 fd = open(myfile, "r")
             except:
@@ -139,28 +139,7 @@ def find_str_get_nums(str_list, files_list, arg_obj):
             text = fd.read().split()
             for i, word in enumerate(text):
                 if word == mystr:
-                    print(text[i], text[i + 1])
                     number_list.append(text[i+1])
-            
-            print(number_list)
             value = get_avreage_list(check_anomaly(number_list, arg_obj, j))
             dict_for_json[mystr] = value 
         create_json_report(dict_for_json, arg_obj, j)
-        #print (dict_for_json)
-
-    # for myfile in files_list:
-    #     for mystr in str_list:
-    #        # print("hifromfirst for")
-    #         try:
-    #             fd = open(myfile, "r")      
-    #         except:
-    #             print("Can't open file for reading, make sure you have valid file or permissions")
-    #             exit()
-    #         for line_num, line in enumerate(fd):
-    #             #if mystr in line:
-    #             line_splitted = line.split()
-    #             for i, w in enumerate(line_splitted):
-    #                 if w == mystr:
-    #                     print(line_splitted[i + 1])
-    #                     print("line_num ", line_num) 
-    #         fd.close()
