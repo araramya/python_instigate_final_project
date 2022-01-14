@@ -31,26 +31,25 @@ def init_obj(args):
     also this function check can the program open config_file and is config file written in
     the right way
     '''
-    if (check_arguments(args)):
-        if(args.confpath is None):
-            arg_obj = ArgsInfo(args.regexp, args.repdir, args.filepat, args.fileext)
-            return arg_obj
-        else:
-            try:
-                with open(args.confpath, "r") as myfile:
-                    json_data = json.load(myfile)
-            except:
-                print("Error with opening config file")
-                exit()
-            if len(json_data) != 4:
-                print("Invalid configuration file")
-            try:
-                arg_obj = ArgsInfo(json_data["regexp"],json_data["repdir"],
+    if(args.confpath is None):
+        arg_obj = ArgsInfo(args.regexp, args.repdir, args.filepat, args.fileext)
+        return arg_obj
+    else:
+        try:
+            with open(args.confpath, "r") as myfile:
+                json_data = json.load(myfile)
+        except:
+            print("Error with opening config file or loading json file.")
+            exit()
+        if len(json_data) != 4:
+            print("Invalid configuration file")
+        try:
+            arg_obj = ArgsInfo(json_data["regexp"],json_data["repdir"],
                                json_data["filepat"], json_data["fileext"])
-            except:
-                print("Invalid configuration file")
-                exit()
-            return arg_obj
+        except:
+            print("Invalid configuration file")
+            exit()
+        return arg_obj
 
 
 def get_files_path(arg_obj, path, result_list):
@@ -81,18 +80,56 @@ def get_files_path(arg_obj, path, result_list):
     #         return file_path
     # print("Can't find file, make sure file name and extention is valid")
     # exit()
-    
-def find_str_get_nums(str_list, files_list):
-    for myfile in files_list:
+def get_avreage_list(num_list):
+    return sum(num_list) / len(num_list)
+
+def create_json_report(dict_for_json, arg_obj, i):
+        print(dict_for_json)
+        file_name = arg_obj.file_pat + str(i) + "_report" + ".json"
+        full_file_name = os.path.join(arg_obj.rep_dir, file_name)
+        try:
+            with open(full_file_name, "w") as outfile:
+                json.dump(dict_for_json, outfile)
+        except:
+            print("Error with creating json report file or dumping dictionary")
+        
+
+
+def find_str_get_nums(str_list, files_list, arg_obj):
+    for j, myfile in enumerate(files_list):
+        dict_for_json = {}
         for mystr in str_list:
-           # print("hifromfirst for")
+            number_list = []
+            print(mystr)
             try:
-                fd = open(myfile, "r")        
+                fd = open(myfile, "r")
             except:
-                print("Can't open file for reading, make sure you have valid file or permissions")
+                print("Can't open file for reading, make suure you have valid file or permissions")
                 exit()
-            for line in fd:
-                if mystr in line:
-                    print(mystr)
-                
-            fd.close()
+            text = fd.read().split()
+            for i, word in enumerate(text):
+                if word == mystr:
+                    print(text[i], text[i + 1])
+                    number_list.append(int(text[i+1]))
+            print(number_list)
+            value = get_avreage_list(number_list)
+            dict_for_json[mystr] = value 
+        create_json_report(dict_for_json, arg_obj, j)
+        #print (dict_for_json)
+
+    # for myfile in files_list:
+    #     for mystr in str_list:
+    #        # print("hifromfirst for")
+    #         try:
+    #             fd = open(myfile, "r")      
+    #         except:
+    #             print("Can't open file for reading, make sure you have valid file or permissions")
+    #             exit()
+    #         for line_num, line in enumerate(fd):
+    #             #if mystr in line:
+    #             line_splitted = line.split()
+    #             for i, w in enumerate(line_splitted):
+    #                 if w == mystr:
+    #                     print(line_splitted[i + 1])
+    #                     print("line_num ", line_num) 
+    #         fd.close()

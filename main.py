@@ -18,19 +18,21 @@ class ArgsInfo:
         return f"{self.reg_exp} {self.rep_dir} {self.file_pat} {self.file_ext}"
 
 def main():
+    args = argparsing.parsing_argument()
+    if  not functions.check_arguments(args):
+        print("Invalid Arguments passed, make sure you do it in the right way.")
+        exit()
     result_list = []
     path = os.getcwd()
-    args = argparsing.parsing_argument()
-    arg_obj = functions.init_obj(args
-    )
+    arg_obj = functions.init_obj(args)
     #file_path = checkings.get_file_path(arg_obj)
     #print(file_path)
     files_list = functions.get_files_path(arg_obj, path, result_list)
     if len(files_list) == 0:
-        print("Can't find files, make sure file name and extention are valid")
+        print("Can't find files, make sure file name and extention are valid.")
         exit()
     #print(files_list)
-    functions.find_str_get_nums(arg_obj.reg_exp, files_list)
+    functions.find_str_get_nums(arg_obj.reg_exp, files_list, arg_obj)
 
 
 if __name__ == "__main__":
