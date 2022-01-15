@@ -5,6 +5,7 @@ import json
 import os
 
 
+
 def init_obj(args):
     '''
     This function just initiliazing class object and if everything is ok return it

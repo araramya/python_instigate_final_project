@@ -102,9 +102,28 @@ def get_files_path(arg_obj, start_dir):
     for r,d,f in os.walk(start_dir):
         for file in f:
             if arg_obj.file_ext in file and arg_obj.file_pat in file:
-                files_for_searching.append(os.path.join(root,file))
+                files_for_searching.append(os.path.join(r,file))
     if (len(files_for_searching) > 0):
         return files_for_searching
     else:
         print("Files not found")
         exit()
+
+def get_list_of_nums(str_list, files_list):
+    for current_file in files_list:
+        for mystr in str_list:
+            #print (mystr)
+            try:
+                fd = open(current_file, "r")
+            except:
+                print("Can't open file for reading")
+                exit()
+            for line_num, line in enumerate(fd):
+                line_splitted = line.split()
+                for word_num, word in enumerate(line_splitted):
+                    if word == mystr:
+                        print(word)
+                print(word_num)
+                print(line)
+                       
+        fd.close()
