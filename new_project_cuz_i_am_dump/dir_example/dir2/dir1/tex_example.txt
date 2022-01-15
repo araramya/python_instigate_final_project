@@ -1,0 +1,6 @@
+slack 20.9f
+slack 40
+discord 60
+discord 80
+slack 321.0213
+slack 213123f

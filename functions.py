@@ -4,27 +4,6 @@ from main import ArgsInfo
 import json
 import os
 
-def check_arguments(args):
-    '''
-    As I don't know will user pass arguments with config file or wirhout
-    I couldn't require conffile or other arguments, so this function just check
-    which of parsing type choose user and does user parse arguments in the right way
-    if yes it return True eles  False
-    '''
-    if (args.confpath and
-        args.regexp is None and
-        args.repdir is None and
-        args.filepat is None and
-        args.fileext is None ):
-        return True
-
-    elif (args.confpath is None and
-          args.regexp and args.repdir and
-          args.filepat and args.fileext):
-          return True
-    else:
-        return False
-
 
 def init_obj(args):
     '''
