@@ -2,16 +2,12 @@ import argparse
 from collections import defaultdict
 from curses.ascii import isdigit
 import json
-from operator import sub
 import os
-import glob
-import fnmatch
-from tracemalloc import start
 
 
 class ArgsInfo:
     '''
-    As I don't know which way user will choose to pass arguments to my progran
+    As I don't know which way user will choose to pass arguments to my program
     I need some stucture to take arguments in both ways and save it somewhere
     for future use
     '''
@@ -24,20 +20,21 @@ class ArgsInfo:
         return f"{self.reg_exp} {self.rep_dir} {self.file_pat} {self.file_ext}"
 
 
-def parsing_argument():
+def parsing_argument()->argparse.Namespace:
     '''
-    This fuction take from command line 
+    This fuction take from command line arguments it will work only and only
+    inn two ways 
     '''
     parser = argparse.ArgumentParser(prog = "File_parser", description = "Read the given file and find some numbers after some words")
-    parser.add_argument("--confpath",metavar='confpath',
+    parser.add_argument("--confpath",metavar='configuration_file_path',
                         type=str, required=False, help="Path to configuration file")
-    parser.add_argument("--regexp", metavar='regexp',
+    parser.add_argument("--regexp", metavar='regular_expression',
                          type=str, nargs = '+', required=False, help="List of words thet program must find")
-    parser.add_argument("--repdir", metavar='repdir', type=str,
-                        required=False, help="Path to where program will create report file")
-    parser.add_argument("--filepat", metavar='filepat', type=str,
+    parser.add_argument("--repdir", metavar='report_directory', type=str,
+                        required=False, help="Path to where program will create report files")
+    parser.add_argument("--filepat", metavar='file_pattern', type=str,
                         required=False, help="File name that program should find")
-    parser.add_argument("--fileext", metavar='fileext', type=str,
+    parser.add_argument("--fileext", metavar='file_extention', type=str,
                         required=False, help="File extention that program should find")
 
     try:
@@ -47,7 +44,7 @@ def parsing_argument():
     
     return (args)
 
-def check_arguments(args):
+def check_arguments(args:argparse.Namespace)->bool:
     '''
     As I don't know will user pass arguments with config file or wirhout
     I couldn't require conffile or other arguments, so this function just check
@@ -68,7 +65,7 @@ def check_arguments(args):
     else:
         return False
 
-def init_obj(args):
+def init_obj(args:argparse.Namespace)->ArgsInfo:
     '''
     This function just initiliazing class object and if everything is ok return it
     also this function check can the program open config_file and is config file written in
@@ -94,7 +91,7 @@ def init_obj(args):
             exit()
         return arg_obj
 
-def get_files_path(arg_obj, start_dir):
+def get_files_path(arg_obj:ArgsInfo, start_dir:str)->list:
     '''
     This function search return list of paths for files that program should find and read
     also it checks does user give us valid file name and extention
@@ -113,7 +110,13 @@ def get_files_path(arg_obj, start_dir):
         print("Files not found")
         exit()
 
-def is_float_digit(num_str):
+def is_float_digit(num_str:str)->bool:
+    '''
+    This function is checking is num_str is number or not
+    I also checked the case when dot was occured for float
+    point numbers, but if it will find more than one dot
+    it will not be number
+    '''
     dot_count = 0
     for character in num_str:
         if not character.isdigit() and character != '.':
@@ -124,10 +127,20 @@ def is_float_digit(num_str):
         return False
     return True
 
-def avg(my_list):
+def avg(my_list:list)->float:
+    '''
+    This function takes as argument the list
+    and retturn the avreage number of it's elements
+    '''
     return sum(my_list) / len(my_list)
 
-def create_json_file(file_path, file_num, dict_for_report, arg_obj):
+def create_json_file(file_path:str, file_num:int, dict_for_report:dict, arg_obj:ArgsInfo)->int:
+    '''
+    This function is creating .json file for report
+    it will contaion the word we are searching for, it's subspace and
+    the avreage number of numbers after that word in subspace
+    it will return 0 for success
+    '''
     file_name = os.path.basename(file_path) + ".report" + str(file_num) + ".json"
     file_ab_path = os.path.join(arg_obj.rep_dir, file_name)
     try:
@@ -138,7 +151,11 @@ def create_json_file(file_path, file_num, dict_for_report, arg_obj):
         exit()
     return 0
 
-def create_anom_file(file_path, file_num, dict_anom, arg_obj):
+def create_anom_file(file_path:str, file_num:int, dict_anom:dict, arg_obj:ArgsInfo)->int:
+    '''
+    This function works as create_json_file function, its creating .json file for anomaly
+    occurences and return 0 in case of success
+    '''
     file_name = os.path.basename(file_path) + ".anom" + str(file_num) + ".json"
     file_ab_path = os.path.join(arg_obj.rep_dir, file_name)
     try:
@@ -149,18 +166,35 @@ def create_anom_file(file_path, file_num, dict_anom, arg_obj):
         exit()
     return 0
             
-def create_all_report(file_path, file_num, dict_maxminvg, arg_obj):
+def create_all_report(file_path:str, file_num:int, dict_maxminavg:dict, arg_obj:ArgsInfo)->int:
+    '''
+    This function works as create_anom_file and create_json_file functions
+    its create .json file for all occurences of words we are searching for
+    and about there max min and avg values, it also return a 0 in case of success
+    '''
     file_name = os.path.basename(file_path) + ".all_report" + str(file_num) + ".json"
     file_ab_path = os.path.join(arg_obj.rep_dir, file_name)
     try:
         with open(file_ab_path, "w") as outfile:
-            json.dump(dict_maxminvg, outfile)
+            json.dump(dict_maxminavg, outfile)
     except:
         print ("Can't create all_report file or dump dictionart")
         exit()
     return 0
 
-def get_dict_of_nums(arg_obj, files_list):
+def get_dict_of_nums(arg_obj:ArgsInfo, files_list:list)->int:
+    '''
+    This function is going through files, its searching words we
+    are looking for, and taking the numbers after that
+    it also creating 3 types of dictionary:
+    1)dict_for_report -> its a dictionary for every file which contain information about
+                         avreage values of some numbers in every subspace
+    2)dict_anomal     -> its a dictionary for every file in if there is some anomal numbers
+                         for saying anomal I mean if there is no number after regular_expressing in line
+    3)dict_maxmin_avg -> its a dictionary which contains information about all the numbers
+                         after regular expressions in file
+    it return 0 after success
+    '''
     str_list = arg_obj.reg_exp
     for file_num, file in enumerate(files_list):
         dict_for_report = {}
@@ -200,7 +234,12 @@ def get_dict_of_nums(arg_obj, files_list):
             fd.close()
             if(len(list_maxminavg) != 0 ):
                 dict_maxminavg[mystr] = dict(zip(["max", "min", "avg"],[max(list_maxminavg), min(list_maxminavg), avg(list_maxminavg)]))
-        create_json_file(file, file_num, dict_for_report, arg_obj)
-        create_anom_file(file, file_num, dict_anomal, arg_obj)
-        create_all_report(file, file_num, dict_maxminavg, arg_obj)
+        if create_json_file(file, file_num, dict_for_report, arg_obj) == 0:
+            print("Report file created")
+        if create_anom_file(file, file_num, dict_anomal, arg_obj) == 0:
+            print("Anomaly Report file created")
+        if create_all_report(file, file_num, dict_maxminavg, arg_obj) == 0:
+            print("All Report file created")
+        
+    return 0
     

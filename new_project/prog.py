@@ -9,8 +9,8 @@ def main():
         exit()
     arg_obj = util_functions.init_obj(args)
     files_ab_paths = util_functions.get_files_path(arg_obj, os.getcwd())
-    #print (files_ab_paths)
-    util_functions.get_dict_of_nums(arg_obj,files_ab_paths)
+    if util_functions.get_dict_of_nums(arg_obj,files_ab_paths) == 0:
+        print("All files are succesaly created")
     
 
 if __name__ == "__main__":
