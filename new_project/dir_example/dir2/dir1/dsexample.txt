@@ -768,7 +768,7 @@ Path 94
   Slack (ns):              1.366
   Arrival (ns):            3.451
   Required (ns):           4.817
-
+`
 Path 95
   From: MEM_GENMON_0/write_addr[0]:CLK
   To:   MEM_GENMON_0/read_addr[2]:D
@@ -998,7 +998,7 @@ Expanded Path 3
   Data arrival time calculation
   0.000                        PF_CCC_0/pll_inst_0/OUT0
                +     0.000          Clock source
-  0.000                        PF_CCC_0/pll_inst_0:OUT0 (r)
+  0.000                        PF_CCC_0/pathll_inst_0:OUT0 (r)
                +     1.262          Clock generation
   1.262                        
                +     0.320          net: PF_CCC_0/pll_inst_0_clkint_0

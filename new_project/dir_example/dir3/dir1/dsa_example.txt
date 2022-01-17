@@ -21,14 +21,27 @@ Path 1
   From: MEM_GENMON_0/write_addr[2]:CLK
   To:   MEM_GENMON_0/read_addr[9]:D
   Delay (ns):              1.065
-  Slack (ns):              1.222
+  Slack (ns):              0f
   Arrival (ns):            3.572
   Required (ns):           4.794
+  465 Slack (ns):           0f
+  Discord                    6f
+  Discord                    7
 
 Path 2
   From: MEM_GENMON_0/expected_data_rp_small_d1[18]:CLK
   To:   MEM_GENMON_0/read_error:D
   Delay (ns):              1.088
-  Slack (ns):              1.224
   Arrival (ns):            3.593
   Required (ns):           4.817
+  Discord                   5.64f
+  Discord                   4566
+
+Path 3
+  From: MEM_GENMON_0/write_addr[4]:CLK
+  To:   MEM_GENMON_0/read_addr[9]:D
+  Delay (ns):              1.052
+  Arrival (ns):            3.561
+  Required (ns):           4.794
+  Slack                    4.975
+  Slack                    5

@@ -1,6 +1,0 @@
-slack 46.024
-slack 50
-discord 12
-discord 56
-discord 48
-discord dasdasd

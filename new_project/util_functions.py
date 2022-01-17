@@ -1,6 +1,8 @@
 import argparse
+from collections import defaultdict
 from curses.ascii import isdigit
 import json
+from operator import sub
 import os
 import glob
 import fnmatch
@@ -100,6 +102,8 @@ def get_files_path(arg_obj, start_dir):
     files_for_searching = []
     root = start_dir
     for r,d,f in os.walk(start_dir):
+        if os.path.basename(arg_obj.rep_dir) in d:
+            d.remove(os.path.basename(arg_obj.rep_dir))
         for file in f:
             if arg_obj.file_ext in file and arg_obj.file_pat in file:
                 files_for_searching.append(os.path.join(r,file))
@@ -109,21 +113,94 @@ def get_files_path(arg_obj, start_dir):
         print("Files not found")
         exit()
 
-def get_list_of_nums(str_list, files_list):
-    for current_file in files_list:
+def is_float_digit(num_str):
+    dot_count = 0
+    for character in num_str:
+        if not character.isdigit() and character != '.':
+            return False
+        if character == '.':
+            dot_count += 1
+    if dot_count > 1:
+        return False
+    return True
+
+def avg(my_list):
+    return sum(my_list) / len(my_list)
+
+def create_json_file(file_path, file_num, dict_for_report, arg_obj):
+    file_name = os.path.basename(file_path) + ".report" + str(file_num) + ".json"
+    file_ab_path = os.path.join(arg_obj.rep_dir, file_name)
+    try:
+        with open(file_ab_path, "w") as outfile:
+            json.dump(dict_for_report, outfile)
+    except:
+        print("Can't create report file or dump dictionary")
+        exit()
+    return 0
+
+def create_anom_file(file_path, file_num, dict_anom, arg_obj):
+    file_name = os.path.basename(file_path) + ".anom" + str(file_num) + ".json"
+    file_ab_path = os.path.join(arg_obj.rep_dir, file_name)
+    try:
+        with open(file_ab_path, "w") as outfile:
+            json.dump(dict_anom, outfile)
+    except:
+        print ("Can't create anomaly report file or dump dictionary")
+        exit()
+    return 0
+            
+def create_all_report(file_path, file_num, dict_maxminvg, arg_obj):
+    file_name = os.path.basename(file_path) + ".all_report" + str(file_num) + ".json"
+    file_ab_path = os.path.join(arg_obj.rep_dir, file_name)
+    try:
+        with open(file_ab_path, "w") as outfile:
+            json.dump(dict_maxminvg, outfile)
+    except:
+        print ("Can't create all_report file or dump dictionart")
+        exit()
+    return 0
+
+def get_dict_of_nums(arg_obj, files_list):
+    str_list = arg_obj.reg_exp
+    for file_num, file in enumerate(files_list):
+        dict_for_report = {}
+        dict_anomal = {}
+        dict_maxminavg = {}
         for mystr in str_list:
-            #print (mystr)
+            list_maxminavg = []
+            dict_for_report[mystr] = {}
+            dict_anomal[mystr] = {}
+            dict_maxminavg[mystr] = {}
             try:
-                fd = open(current_file, "r")
+                fd = open(file, "r")
             except:
                 print("Can't open file for reading")
                 exit()
-            for line_num, line in enumerate(fd):
-                line_splitted = line.split()
-                for word_num, word in enumerate(line_splitted):
-                    if word == mystr:
-                        print(word)
-                print(word_num)
-                print(line)
-                       
-        fd.close()
+            for line_num,line in enumerate(fd):
+                if "Path" in line: #Ask how to find subspaces in file it'st hardcoding and I don't like it
+                    nums_of_subspace = []
+                    temp_line = line.strip("\n")
+                    for line in fd:
+                        line_sp = line.split()
+                        if mystr in line_sp:
+                            id = line_sp.index(mystr)
+                            num_count = 0
+                            while id < len(line_sp):
+                                if is_float_digit(line_sp[id]):
+                                    nums_of_subspace.append(float(line_sp[id]))
+                                    list_maxminavg.append(float(line_sp[id]))
+                                    num_count += 1
+                                id += 1
+                            if(num_count == 0):
+                                dict_anomal[mystr][temp_line] = "ErrorInSubSpace"
+                        if len(line) == 1:
+                            break
+                    if len(nums_of_subspace) != 0:
+                        dict_for_report[mystr][temp_line] = avg(nums_of_subspace)
+            fd.close()
+            if(len(list_maxminavg) != 0 ):
+                dict_maxminavg[mystr] = dict(zip(["max", "min", "avg"],[max(list_maxminavg), min(list_maxminavg), avg(list_maxminavg)]))
+        create_json_file(file, file_num, dict_for_report, arg_obj)
+        create_anom_file(file, file_num, dict_anomal, arg_obj)
+        create_all_report(file, file_num, dict_maxminavg, arg_obj)
+    

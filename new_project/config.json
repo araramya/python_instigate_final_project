@@ -1,0 +1,7 @@
+
+{
+    "regexp" : ["Slack", "Discord"],
+    "repdir" : "/home/araramya/Desktop/new_project/report_directory",
+    "filepat" : "example",
+    "fileext" : ".txt"
+}

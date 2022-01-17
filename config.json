@@ -1,7 +1,0 @@
-
-{
-    "regexp" : ["slack", "discord"],
-    "repdir" : "/Users/user/Desktop/python_instigate_final_project/report_dir",
-    "filepat" : "tex_example",
-    "fileext" : ".txt"
-}
